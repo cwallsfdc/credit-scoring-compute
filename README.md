@@ -260,24 +260,35 @@ heroku create your-credit-scoring-app
 
 ### 3. Add Required Buildpacks
 
+The app lives inside a monorepo, so the [Heroku Monorepo buildpack](https://elements.heroku.com/buildpacks/lstoll/heroku-buildpack-monorepo) must run first to scope the build to the CreditScoring compute extension directory.
+
 ```bash
+heroku buildpacks:add https://github.com/lstoll/heroku-buildpack-monorepo
+heroku buildpacks:add heroku/heroku-applink-service-mesh
 heroku buildpacks:add heroku/python
-heroku buildpacks:add heroku-community/applink-service-mesh
 ```
 
-### 4. Provision the AppLink Add-on
+### 4. Set APP_BASE
+
+Point the monorepo buildpack at the compute extension root:
+
+```bash
+heroku config:set APP_BASE=force-app/main/default/computeExtensions/CreditScoring -a your-credit-scoring-app
+```
+
+### 5. Provision the AppLink Add-on
 
 ```bash
 heroku addons:create applink
 ```
 
-### 5. Deploy the Application
+### 6. Deploy the Application
 
 ```bash
-git subtree push --prefix force-app/main/default/computeExtensions/CreditScoring heroku main
+git push heroku main
 ```
 
-### 6. Verify Deployment
+### 7. Verify Deployment
 
 ```bash
 heroku open
