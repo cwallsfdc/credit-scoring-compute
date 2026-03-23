@@ -15,6 +15,7 @@ A [Heroku AppLink](https://www.heroku.com/applink) Python application that compu
 - [Manual Heroku Deployment](#manual-heroku-deployment)
 - [Heroku AppLink Setup](#heroku-applink-setup)
 - [Salesforce Setup](#salesforce-setup)
+- [Invoking Compute](#invoking-compute)
 
 ## Project Structure
 
@@ -360,3 +361,64 @@ Ensure the user has the **CreditScoringCompute** Permission Set assigned, which 
 
 - Read access on `Account` (including the custom financial fields)
 - Create access on the `GenerateCreditScoring__e` Platform Event
+
+## Invoking Compute
+
+Once the app is deployed, published, and the Permission Set is assigned, you can invoke the Credit Scoring compute extension from Apex.
+
+The [`InvokeCreditScoringCompute`](force-app/main/default/classes/InvokeCreditScoringCompute.cls) class queries for a random Account with all required financial fields populated and invokes the compute extension:
+
+```apex
+public class InvokeCreditScoringCompute {
+    public static void invoke() {
+        List<Account> accounts = [
+            SELECT Id FROM Account
+            WHERE WorkingCapital__c != null
+              AND TotalAssets__c != null
+              AND RetainedEarnings__c != null
+              AND EBIT__c != null
+              AND MarketValueEquity__c != null
+              AND TotalLiabilities__c != null
+              AND Sales__c != null
+        ];
+        Integer idx = (Integer) Math.floor(Math.random() * accounts.size());
+        Account acct = accounts[idx];
+
+        herokuapplink.CreditScoringCompute creditScoringCompute = new herokuapplink.CreditScoringCompute();
+        herokuapplink.CreditScoringCompute.GenerateCreditScoring_Request request = new herokuapplink.CreditScoringCompute.GenerateCreditScoring_Request();
+        request.body = new herokuapplink.CreditScoringCompute_CreditScoringData();
+        request.body.data = new herokuapplink.CreditScoringCompute_CreditScoringRequest();
+        request.body.data.accountId = acct.Id;
+        System.debug('Invoking credit scoring for Account: ' + acct.Id);
+        System.debug(JSON.serialize(creditScoringCompute.GenerateCreditScoring(request)));
+    }
+}
+```
+
+### Using Developer Console
+
+1. Open **Developer Console** from Salesforce Setup.
+2. Navigate to **Debug → Open Execute Anonymous Window**.
+3. Enter and execute:
+
+```apex
+InvokeCreditScoringCompute.invoke();
+```
+
+### Using Salesforce CLI
+
+Run the following command to invoke the Apex class via the SF CLI:
+
+```bash
+sf apex run --file scripts/apex/invokeCreditScoringCompute.apex
+```
+
+Or execute inline:
+
+```bash
+echo "InvokeCreditScoringCompute.invoke();" | sf apex run
+```
+
+### Invocation Response
+
+![Invoke Response](images/invoke-response.png)
