@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Rating__c</fullName>
+    <label>Rating</label>
+    <type>Text</type>
+    <length>5</length>
+    <required>true</required>
+    <description>The credit scoring rating (AAA, AA, A, BBB, BB, B, CCC, or D).</description>
+    <externalId>false</externalId>
+</CustomField>

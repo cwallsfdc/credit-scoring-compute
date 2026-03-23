@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Credit Scoring API
+  description: >
+    A Heroku AppLink application that computes credit ratings for Salesforce
+    Accounts using the Altman Z-Score model. The API queries the invoking
+    Salesforce org for financial data, computes a credit scoring, and publishes
+    a GenerateCreditScoring__e Platform Event with the result.
+servers:
+  - url: /
+paths:
+  /api/credit-scoring/:
+    post:
+      tags:
+        - credit-scoring
+      summary: Generate Credit Scoring
+      operationId: GenerateCreditScoring
+      description: >
+        Accepts a Salesforce Account ID, queries the invoking org for the
+        Account's financial data, computes a credit score using the method
+        configured via the SCORING_METHOD environment variable (Altman Z-Score
+        or scikit-learn Logistic Regression), maps it to a standard credit
+        rating (AAA–D), publishes a GenerateCreditScoring__e Platform Event,
+        and returns the result.
+      x-sfdc:
+        heroku:
+          authorization:
+            connectedApp: 'CreditScoringConnectedApp'
+            permissionSet: 'CreditScoringPermSet'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditScoringData'
+      responses:
+        '200':
+          description: Successfully computed the credit scoring.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditScoringResponse'
+        '404':
+          description: Account not found in the invoking org.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Financial data is insufficient to compute a credit scoring.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error while querying or publishing events.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    CreditScoringRequest:
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: The Salesforce Account ID to compute the credit scoring for.
+          example: '001XX000003GYQXYA4'
+    CreditScoringData:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/CreditScoringRequest'
+    CreditScoringResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: The Salesforce Account ID.
+          example: '001XX000003GYQXYA4'
+        accountName:
+          type: string
+          description: The name of the Salesforce Account.
+          example: 'Acme Corporation'
+        score:
+          type: number
+          format: float
+          description: The computed credit score.
+          example: 2.85
+        creditScoring:
+          type: string
+          description: >
+            The credit rating derived from the score
+            (AAA, AA, A, BBB, BB, B, CCC, or D).
+          example: 'AA'
+        riskCategory:
+          type: string
+          description: >
+            The risk category (Safe, Grey Zone, or Distress).
+          example: 'Safe'
+        method:
+          type: string
+          description: The scoring method that was used.
+          example: 'altman_z_score'
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable error message.
+          example: 'Account with Id 001XX000003GYQXYA4 not found.'

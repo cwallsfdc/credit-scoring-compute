@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Score__c</fullName>
+    <label>Score</label>
+    <type>Number</type>
+    <precision>8</precision>
+    <scale>4</scale>
+    <required>true</required>
+    <description>The computed credit score value.</description>
+    <externalId>false</externalId>
+</CustomField>
