@@ -9,6 +9,7 @@ import logging
 import os
 
 import heroku_applink as sdk
+from heroku_applink import Record
 import numpy as np
 import yaml
 from fastapi import APIRouter, FastAPI, HTTPException
@@ -213,6 +214,7 @@ async def generate_credit_rating(request: CreditScoringData) -> CreditScoringRes
             f"FROM Account WHERE Id = '{account_id}'"
         )
         result = await data_api.query(query)
+        logger.info(f"Query returned {len(result.records)} record(s)")
     except Exception as e:
         error_message = f"Failed to query Account financial data: {e}"
         logger.error(error_message)
@@ -228,6 +230,7 @@ async def generate_credit_rating(request: CreditScoringData) -> CreditScoringRes
     account_name = record.fields["Name"]
 
     # Extract financial fields, defaulting to 0 if not populated
+    logger.info(f"Account '{account_name}' fields: {record.fields}")
     working_capital = float(record.fields.get("WorkingCapital__c") or 0)
     total_assets = float(record.fields.get("TotalAssets__c") or 0)
     retained_earnings = float(record.fields.get("RetainedEarnings__c") or 0)
@@ -268,16 +271,18 @@ async def generate_credit_rating(request: CreditScoringData) -> CreditScoringRes
     )
 
     # Publish a GenerateCreditScoring__e Platform Event in the invoking org
+    platform_event = Record(
+        type="GenerateCreditScoring__e",
+        fields={
+            "AccountId__c": account_id,
+            "Rating__c": credit_rating,
+            "Score__c": score,
+            "RiskCategory__c": risk_category,
+        },
+    )
+    logger.info(f"Publishing Platform Event: type={platform_event.type}, fields={platform_event.fields}")
     try:
-        await data_api.create({
-            "type": "GenerateCreditScoring__e",
-            "fields": {
-                "AccountId__c": account_id,
-                "Rating__c": credit_rating,
-                "Score__c": score,
-                "RiskCategory__c": risk_category,
-            },
-        })
+        await data_api.create(platform_event)
         logger.info("Published GenerateCreditScoring__e Platform Event.")
     except Exception as e:
         error_message = f"Failed to publish GenerateCreditScoring__e Platform Event: {e}"

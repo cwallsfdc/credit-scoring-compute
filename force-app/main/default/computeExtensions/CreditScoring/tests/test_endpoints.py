@@ -136,11 +136,11 @@ class TestCreditScoringEndpoint:
         assert response.status_code == 200
         mock_context.data_api.create.assert_called_once()
         call_args = mock_context.data_api.create.call_args[0][0]
-        assert call_args["type"] == "GenerateCreditScoring__e"
-        assert call_args["fields"]["AccountId__c"] == "001XX000003GYQXYA4"
-        assert "Rating__c" in call_args["fields"]
-        assert "Score__c" in call_args["fields"]
-        assert "RiskCategory__c" in call_args["fields"]
+        assert call_args.type == "GenerateCreditScoring__e"
+        assert call_args.fields["AccountId__c"] == "001XX000003GYQXYA4"
+        assert "Rating__c" in call_args.fields
+        assert "Score__c" in call_args.fields
+        assert "RiskCategory__c" in call_args.fields
 
     def test_platform_event_failure_returns_500(self, client, mock_context):
         record = _make_account_record()

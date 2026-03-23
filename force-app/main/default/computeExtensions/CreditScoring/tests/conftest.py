@@ -16,8 +16,15 @@ class DummyIntegrationAsgiMiddleware:
         await self.app(scope, receive, send)
 
 
-# Attach the DUMMY class to our FAKE module.
+# Define a dummy Record class matching the real SDK's Record interface.
+class DummyRecord:
+    def __init__(self, *, type: str, fields: dict):
+        self.type = type
+        self.fields = fields
+
+# Attach the DUMMY classes to our FAKE module.
 mock_sdk.IntegrationAsgiMiddleware = DummyIntegrationAsgiMiddleware
+mock_sdk.Record = DummyRecord
 
 # Now, put the fake module in place.
 sys.modules["heroku_applink"] = mock_sdk
