@@ -4,6 +4,9 @@
 
 package.xml
 
+# Compute Extensions (not yet supported by SF CLI source tracking)
+**/computeExtensions/**
+
 # LWC configuration files
 **/jsconfig.json
 **/.eslintrc.json

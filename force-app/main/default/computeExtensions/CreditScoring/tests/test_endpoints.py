@@ -35,12 +35,12 @@ class TestCreditScoringEndpoint:
         """Helper to set the mock data_api.query return value."""
         result = MagicMock()
         result.records = records
-        mock_context.org.data_api.query = AsyncMock(return_value=result)
+        mock_context.data_api.query = AsyncMock(return_value=result)
 
     def test_altman_z_score_default_method(self, client, mock_context):
         record = _make_account_record()
         self._mock_query_result(mock_context, [record])
-        mock_context.org.data_api.create = AsyncMock()
+        mock_context.data_api.create = AsyncMock()
 
         response = client.post(
             "/api/credit-scoring/",
@@ -60,7 +60,7 @@ class TestCreditScoringEndpoint:
         monkeypatch.setenv("SCORING_METHOD", "logistic_regression")
         record = _make_account_record()
         self._mock_query_result(mock_context, [record])
-        mock_context.org.data_api.create = AsyncMock()
+        mock_context.data_api.create = AsyncMock()
 
         response = client.post(
             "/api/credit-scoring/",
@@ -77,7 +77,7 @@ class TestCreditScoringEndpoint:
         monkeypatch.setenv("SCORING_METHOD", "unknown_method")
         record = _make_account_record()
         self._mock_query_result(mock_context, [record])
-        mock_context.org.data_api.create = AsyncMock()
+        mock_context.data_api.create = AsyncMock()
 
         response = client.post(
             "/api/credit-scoring/",
@@ -99,7 +99,7 @@ class TestCreditScoringEndpoint:
         assert "not found" in response.json()["detail"].lower()
 
     def test_query_failure_returns_500(self, client, mock_context):
-        mock_context.org.data_api.query = AsyncMock(
+        mock_context.data_api.query = AsyncMock(
             side_effect=Exception("SOQL error")
         )
 
@@ -126,7 +126,7 @@ class TestCreditScoringEndpoint:
     def test_platform_event_published(self, client, mock_context):
         record = _make_account_record()
         self._mock_query_result(mock_context, [record])
-        mock_context.org.data_api.create = AsyncMock()
+        mock_context.data_api.create = AsyncMock()
 
         response = client.post(
             "/api/credit-scoring/",
@@ -134,8 +134,8 @@ class TestCreditScoringEndpoint:
         )
 
         assert response.status_code == 200
-        mock_context.org.data_api.create.assert_called_once()
-        call_args = mock_context.org.data_api.create.call_args[0][0]
+        mock_context.data_api.create.assert_called_once()
+        call_args = mock_context.data_api.create.call_args[0][0]
         assert call_args["type"] == "GenerateCreditScoring__e"
         assert call_args["fields"]["AccountId__c"] == "001XX000003GYQXYA4"
         assert "Rating__c" in call_args["fields"]
@@ -145,7 +145,7 @@ class TestCreditScoringEndpoint:
     def test_platform_event_failure_returns_500(self, client, mock_context):
         record = _make_account_record()
         self._mock_query_result(mock_context, [record])
-        mock_context.org.data_api.create = AsyncMock(
+        mock_context.data_api.create = AsyncMock(
             side_effect=Exception("Event publish error")
         )
 
@@ -176,7 +176,7 @@ class TestCreditScoringEndpoint:
             sales=200000,
         )
         self._mock_query_result(mock_context, [record])
-        mock_context.org.data_api.create = AsyncMock()
+        mock_context.data_api.create = AsyncMock()
 
         response = client.post(
             "/api/credit-scoring/",

@@ -26,8 +26,8 @@ paths:
       x-sfdc:
         heroku:
           authorization:
-            connectedApp: 'CreditScoringConnectedApp'
-            permissionSet: 'CreditScoringPermSet'
+            connectedApp: 'HerokuAppLinkAuthConnectedApp'
+            permissionSet: 'CreditScoringCompute'
       requestBody:
         required: true
         content:

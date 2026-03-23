@@ -14,6 +14,7 @@ A [Heroku AppLink](https://www.heroku.com/applink) Python application that compu
 - [API Endpoints](#api-endpoints)
 - [Manual Heroku Deployment](#manual-heroku-deployment)
 - [Heroku AppLink Setup](#heroku-applink-setup)
+- [Salesforce Setup](#salesforce-setup)
 
 ## Project Structure
 
@@ -178,10 +179,12 @@ An Anonymous Apex script is provided at `scripts/apex/insertCreditScoringAccount
 | Umbrella Ltd | B | Distress |
 | Stark Ventures | D | Distress |
 
+> **Note:** The running user must have create access on `Account` and edit access on the custom financial fields. Assign the **CreditScoringCompute** Permission Set (or an equivalent) before running the script.
+
 Run the script via the Salesforce CLI:
 
 ```bash
-sf apex run --file scripts/apex/insertCreditScoringAccounts.apex
+sf apex run --file scripts/apex/insertCreditRatingAccounts.apex
 ```
 
 Or in VS Code, open the file and run **SFDX: Execute Anonymous Apex with Editor Contents**.
@@ -276,10 +279,10 @@ Point the monorepo buildpack at the compute extension root:
 heroku config:set APP_BASE=force-app/main/default/computeExtensions/CreditScoring -a your-credit-scoring-app
 ```
 
-### 5. Provision the AppLink Add-on
+### 5. Provision the [AppLink Add-on](https://elements.heroku.com/addons/heroku-applink)
 
 ```bash
-heroku addons:create applink
+heroku addons:create heroku-applink
 ```
 
 ### 6. Deploy the Application
@@ -305,7 +308,7 @@ heroku plugins:install @heroku-cli/plugin-applink
 ### 2. Connect to Salesforce Org
 
 ```bash
-heroku salesforce:connect my_connection -a your-credit-scoring-app
+heroku salesforce:connect prod-org -a your-credit-scoring-app
 ```
 
 This opens a browser OAuth flow to authenticate and link your Salesforce org.
@@ -317,13 +320,41 @@ Publish the API spec to the connected Salesforce org:
 ```bash
 heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring/api-spec.yaml \
   -a your-credit-scoring-app \
-  -c CreditScoringClient \
-  --connection-name my_connection
+  -c CreditScoringCompute \
+  --connection-name prod-org
 ```
 
 > **Note:** As of the Salesforce Spring '26 release, new connected apps can no longer be created automatically. Omit the `--authorization-connected-app-name` and `--authorization-permission-set-name` flags. If you have existing connected apps, you can still reference them via the `x-sfdc` section in `api-spec.yaml`.
 
-### 4. Required Salesforce Permissions
+To verify the publish was successful, go to **Salesforce Setup → Heroku → Apps**. Publishing generates the following resources in your Salesforce org:
+
+- **External Service** named `CreditScoringCompute` — the API client stub generated from the OpenAPI spec
+- **Named Credential** named `CreditScoringCompute` — referenced by the External Service to call the Heroku app
+- **External Credential** named `CreditScoringCompute` — referenced by the Named Credential for authentication
+
+## Salesforce Setup
+
+After publishing, the following resources are visible in Salesforce Setup.
+
+### Heroku Apps
+
+Navigate to **Setup → Heroku → Apps** to see the published Heroku app and its connected org.
+
+![Heroku Apps in Setup](images/setup-heroku-apps-compute.png)
+
+### External Services
+
+Navigate to **Setup → External Services** and select **CreditScoringCompute** to see the generated API operations and their parameters.
+
+![External Services Detail](images/external-services-detail-compute.png)
+
+### API Catalog
+
+Navigate to **Setup → API Catalog** to see the published API specification.
+
+![API Catalog](images/setup-api-catalog-compute.png)
+
+### Required Salesforce Permissions
 
 Ensure the user has the **CreditScoringCompute** Permission Set assigned, which grants:
 

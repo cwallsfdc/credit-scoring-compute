@@ -5,6 +5,7 @@ It initializes a main FastAPI application for public endpoints and mounts a
 sub-application for all endpoints that require Salesforce context via
 Heroku AppLink.
 """
+import logging
 import os
 
 import heroku_applink as sdk
@@ -194,10 +195,11 @@ async def generate_credit_rating(request: CreditScoringData) -> CreditScoringRes
     :return: The computed credit scoring for the Account.
     :rtype: CreditScoringResponse
     """
+    logger = logging.getLogger(__name__)
+    logger.info(f"Incoming request payload: {request.model_dump_json()}")
+
     context = sdk.get_client_context()
-    org = context.org
-    data_api = org.data_api
-    logger = context.logger
+    data_api = context.data_api
 
     account_id = request.data.accountId
     logger.info(f"POST /credit-scoring for Account: {account_id}")
