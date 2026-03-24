@@ -19,6 +19,19 @@ public class InvokeCreditScoringCompute {
         request.body.data = new herokuapplink.CreditScoringCompute_CreditScoringRequest();
         request.body.data.accountId = acct.Id;
         System.debug('Invoking credit scoring for Account: ' + acct.Id);
-        System.debug(JSON.serialize(creditScoringCompute.GenerateCreditScoring(request)));
+        try {
+            System.debug(JSON.serialize(creditScoringCompute.GenerateCreditScoring(request)));
+        } catch (herokuapplink.CreditScoringCompute.GenerateCreditScoring_ResponseException e) {
+            System.debug('GenerateCreditScoring failed with response code: ' + e.responseCode);
+            if (e.responseCode == 404 && e.Code404 != null) {
+                System.debug('404 - Account not found: ' + e.Code404.detail);
+            } else if (e.responseCode == 422 && e.Code422 != null) {
+                System.debug('422 - Insufficient financial data: ' + e.Code422.detail);
+            } else if (e.responseCode == 500 && e.Code500 != null) {
+                System.debug('500 - Internal server error: ' + e.Code500.detail);
+            } else {
+                System.debug('Default response: ' + e.defaultResponse);
+            }
+        }
     }
 }

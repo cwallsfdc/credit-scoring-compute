@@ -23,7 +23,7 @@ This project is organized as a Salesforce DX project with a **ComputeExtension**
 
 The compute extension is located at `force-app/main/default/computeExtensions/CreditScoring/` and contains:
 
-- `CreditScoring.computeExtension-meta.xml` — Salesforce metadata descriptor
+- `CreditScoring.computeExtension` — Salesforce metadata descriptor
 - `main.py` — FastAPI application
 - `api-spec.yaml` — OpenAPI 3.0 specification
 - `Procfile` — Heroku process definition
@@ -306,7 +306,18 @@ heroku open
 heroku plugins:install @heroku-cli/plugin-applink
 ```
 
-### 2. Connect to Salesforce Org
+### 2. Enable Manage Heroku AppLink Permission
+
+Before connecting or publishing, the Salesforce user must have the **Manage Heroku AppLink** user permission. Assign it via a Permission Set:
+
+1. In Salesforce, go to **Setup → Permission Sets**.
+2. Create a new Permission Set (or edit an existing one).
+3. Navigate to **System Permissions** and enable **Manage Heroku AppLink**.
+4. Assign the Permission Set to the user who will run the connect and publish commands.
+
+> **Note:** Without this permission, the `heroku salesforce:connect` and `heroku salesforce:publish` commands will fail with an authorization error.
+
+### 3. Connect to Salesforce Org
 
 ```bash
 heroku salesforce:connect prod-org -a your-credit-scoring-app
@@ -314,7 +325,7 @@ heroku salesforce:connect prod-org -a your-credit-scoring-app
 
 This opens a browser OAuth flow to authenticate and link your Salesforce org.
 
-### 3. Publish Your App
+### 4. Publish Your App
 
 Publish the API spec to the connected Salesforce org:
 
@@ -390,7 +401,20 @@ public class InvokeCreditScoringCompute {
         request.body.data = new herokuapplink.CreditScoringCompute_CreditScoringRequest();
         request.body.data.accountId = acct.Id;
         System.debug('Invoking credit scoring for Account: ' + acct.Id);
-        System.debug(JSON.serialize(creditScoringCompute.GenerateCreditScoring(request)));
+        try {
+            System.debug(JSON.serialize(creditScoringCompute.GenerateCreditScoring(request)));
+        } catch (herokuapplink.CreditScoringCompute.GenerateCreditScoring_ResponseException e) {
+            System.debug('GenerateCreditScoring failed with response code: ' + e.responseCode);
+            if (e.responseCode == 404 && e.Code404 != null) {
+                System.debug('404 - Account not found: ' + e.Code404.detail);
+            } else if (e.responseCode == 422 && e.Code422 != null) {
+                System.debug('422 - Insufficient financial data: ' + e.Code422.detail);
+            } else if (e.responseCode == 500 && e.Code500 != null) {
+                System.debug('500 - Internal server error: ' + e.Code500.detail);
+            } else {
+                System.debug('Default response: ' + e.defaultResponse);
+            }
+        }
     }
 }
 ```
