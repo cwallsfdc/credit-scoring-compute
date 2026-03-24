@@ -446,3 +446,15 @@ echo "InvokeCreditScoringCompute.invoke();" | sf apex run
 ### Invocation Response
 
 ![Invoke Response](images/invoke-response.png)
+
+### Using Agentforce Agent
+
+You can also invoke the Credit Scoring API through an Agentforce Agent by configuring a Topic and Action.
+
+#### Topic and Action Configuration
+
+![Agent Topic and Action Configuration](images/agent-topic-action-compute.png)
+
+#### Invoking via Agent
+
+![Agent Invoke Compute](images/agent-invoke-compute.png)
