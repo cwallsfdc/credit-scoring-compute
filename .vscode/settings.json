@@ -5,5 +5,21 @@
     "**/.sfdx": true
   },
   "xml.preferences.showSchemaDocumentationType": "none",
-  "salesforcedx-vscode-core.show-cli-success-msg": false
+  "salesforcedx-vscode-core.show-cli-success-msg": false,
+  "workbench.colorTheme": "Visual Studio Light"
+  ,
+  "python.defaultInterpreterPath": "/Users/cwall/.pyenv/versions/3.11.4/bin/python3.11",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.cursor": true,
+    "**/.sfdx": true,
+    "**/.vscode": true,
+    "**/.vendor": true,
+    "**/.husky": true,
+    "**/.pretty*": true,
+    "**/.venv": true,
+    "**/.sf": true
+  }
 }
