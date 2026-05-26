@@ -71,9 +71,10 @@ When the user requests deployment:
 
 3. **Deploy compute workload**
    - Show: 🚀 Deploying compute workload to Salesforce...
-   - Execute: `git push heroku $(git branch --show-current):main`
-   - Show build output as it happens (stream the git push output)
+   - Silently execute: `git push heroku $(git branch --show-current):main`
+   - Parse output and show friendly milestones: "📦 Building...", "📦 Installing dependencies...", "🚀 Finalizing..."
    - Show: ✅ Compute workload deployed successfully
+   - DO NOT show raw bash output
 
 4. **Publish to org**
    - Show: 🔗 Publishing to <org-name>...
@@ -85,43 +86,39 @@ When the user requests deployment:
 
 ## Implementation Steps
 
-When triggered, execute these steps using the Bash tool:
+**MINIMAL/QUIET MODE: Do NOT use the Bash tool at all. Run commands silently and only output friendly status messages.**
 
 ### 1. List connections and ask for target org
-Run: `heroku applink:connections --app credit-scoring-compute`
-- DO NOT show the bash command to user
-- Parse output to extract connection names
-- If user didn't specify org, show friendly list and ask
-- Show: "Which org would you like to deploy to?"
-- Wait for user selection before proceeding
+- Silently run: `heroku applink:connections --app credit-scoring-compute`
+- Parse output internally
+- Show ONLY: "Which org would you like to deploy to?" with bullet list
+- Wait for user selection
 
 ### 2. Check git status
-Run: `git status --porcelain`
-- DO NOT show the bash command to user
+- Silently run: `git status --porcelain`
 - If clean: Show "🔍 Checking workspace status..." then "✅ Workspace is clean"
 - If dirty: Show "⚠️  You have uncommitted changes" and ask to confirm
+- DO NOT show command or output
 
-### 3. Verify remote
-Run: `git remote -v | grep heroku || heroku git:remote --app credit-scoring-compute`
-- DO NOT show the bash command to user
-- Silent unless error
+### 3. Verify remote (completely silent)
+- Silently run: `git remote -v | grep heroku || heroku git:remote --app credit-scoring-compute`
+- No output to user unless error
 
 ### 4. Deploy workload
-Run: `git push heroku $(git branch --show-current):main`
-- DO NOT show the bash command to user
-- Show user: "🚀 Deploying compute workload to Salesforce..."
-- SHOW THE BUILD OUTPUT as it streams (the output from git push)
-- This is the ONLY command output that should be shown to the user
-- Look for "Build succeeded" or error messages
-- On success: Show "✅ Compute workload deployed successfully"
+- Show: "🚀 Deploying compute workload to Salesforce..."
+- Silently run: `git push heroku $(git branch --show-current):main`
+- Parse output for key milestones:
+  - When building: Show "📦 Building..."
+  - When installing deps: Show "📦 Installing dependencies..."
+  - When deploying: Show "🚀 Finalizing deployment..."
+- Show: "✅ Compute workload deployed successfully"
+- DO NOT show raw bash commands or full output
 
 ### 5. Publish to org
-Run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring --app credit-scoring-compute --connection-name <connection-name> --client-name CreditScoringAPI`
-- DO NOT show the bash command to user
-- Show user: "🔗 Publishing to <org-name>..."
-- DO NOT show the command output
-- Monitor for success/error
-- On success: Show "✅ Published to <org-name>"
+- Show: "🔗 Publishing to <org-name>..."
+- Silently run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring/api-spec.yaml --app credit-scoring-compute --connection-name <connection-name> --client-name CreditScoringAPI`
+- Show: "✅ Published to <org-name>"
+- DO NOT show command or output
 
 ### 6. Final message
 ```
@@ -132,24 +129,26 @@ Run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditS
 ## User Messaging Guidelines
 
 ### DO:
+- **MINIMAL/QUIET MODE**: Run ALL commands silently without showing Bash tool usage
 - Ask for target org FIRST before any deployment steps
 - Use friendly, colorized icons (🔍 📦 🚀 🔗 ✅ ⚠️ ❌ ✨)
 - Say "Deploying compute workload to Salesforce" (not "to cloud")
 - Say "compute workload" not "Heroku app"
 - Say "publishing to <org>" not "AppLink publishing"
-- Show progress with descriptive messages
+- Show ONLY icon + friendly text status updates
+- Parse command outputs internally and show key milestones
 - Keep messages concise and friendly
-- Group related steps visually
 - Make it appear we're deploying directly to the target org
-- Show ONLY the build output during git push (the streaming output)
 
 ### DON'T:
-- Show ANY bash commands to user (not even git push)
-- Show command output (except git push build output)
+- **NEVER show Bash tool calls** (not even with description: "")
+- **NEVER show raw command output** (parse and translate to friendly messages)
+- Show ANY bash commands to user
+- Show technical command outputs
 - Show app URLs (https://credit-scoring-compute.herokuapp.com)
 - Mention "Heroku", "AppLink", "cloud", or technical service names
 - Use technical jargon
-- Show internal implementation details (except git push build logs)
+- Show internal implementation details
 
 ## Error Handling
 
