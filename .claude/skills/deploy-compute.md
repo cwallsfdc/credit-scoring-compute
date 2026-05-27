@@ -53,64 +53,38 @@ Which org would you like to deploy to?
 🚀 Deployment in progress...
 ✅ Compute workload deployed successfully
 
-🔗 Publishing to prod-org...
+🔗 Publishing to compute-demo-org...
 🔗 Syncing API specification...
 🔗 Registering compute extension...
-✅ Published to prod-org
+✅ Published to compute-demo-org
 
-**✨ Deployment complete! Your compute workload is live in prod-org.**
+**✨ Deployment complete! Your compute workload is live in compute-demo-org.**
 ```
 
 ## Deployment Flow
 
 When the user requests deployment:
 
-1. **Ask for target org FIRST**
-   - List available connections (if not specified by user)
-   - Show: "Which org would you like to deploy to?"
-   - Wait for user selection
-
-2. **Pre-flight checks** (silent, show only if issues)
-   - Verify git working directory is clean
-   - Check current branch
-   - Verify remote is configured
-
-3. **Deploy compute workload**
+1. **Deploy compute workload**
    - Show: 🚀 Creating compute environment and deploying compute workload to Salesforce...
-   - Silently execute: `git push heroku $(git branch --show-current):main`
+   - Silently execute: `git push heroku main`
    - Parse output and show friendly milestones: "📦 Building...", "📦 Installing dependencies...", "🚀 Finalizing..."
    - Show: ✅ Compute workload deployed successfully
    - DO NOT show raw bash output
 
-4. **Publish to org**
-   - Show: 🔗 Publishing to <org-name>...
+2. **Publish to org**
+   - Show: 🔗 Publishing to compute-demo-org...
    - Execute publish command
-   - Show: ✅ Published to <org-name>
+   - Show: ✅ Published to compute-demo-org
 
-5. **Report success**
-   - Show: **✨ Deployment complete! Your compute workload is live in <org-name>.**
+3. **Report success**
+   - Show: **✨ Deployment complete! Your compute workload is live in compute-demo-org.**
 
 ## Implementation Steps
 
 **MINIMAL/QUIET MODE: Do NOT use the Bash tool at all. Run commands silently and only output friendly status messages.**
 
-### 1. List connections and ask for target org
-- Silently run: `heroku applink:connections --app credit-scoring-compute`
-- Parse output internally
-- Show ONLY: "Which org would you like to deploy to?" with bullet list
-- Wait for user selection
-
-### 2. Check git status
-- Silently run: `git status --porcelain`
-- If clean: Show "🔍 Checking workspace status..." then "✅ Workspace is clean"
-- If dirty: Show "⚠️  You have uncommitted changes" and ask to confirm
-- DO NOT show command or output
-
-### 3. Verify remote (completely silent)
-- Silently run: `git remote -v | grep heroku || heroku git:remote --app credit-scoring-compute`
-- No output to user unless error
-
-### 4. Deploy workload
+### 1. Deploy workload
 - Show: "🚀 Creating compute environment and deploying compute workload to Salesforce..."
 - Silently run: `git push heroku $(git branch --show-current):main`
 - Parse output for key milestones:
@@ -120,15 +94,15 @@ When the user requests deployment:
 - Show: "✅ Compute workload deployed successfully"
 - DO NOT show raw bash commands or full output
 
-### 5. Publish to org
-- Show: "🔗 Publishing to <org-name>..."
-- Silently run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring/api-spec.yaml --app credit-scoring-compute --connection-name <connection-name> --client-name CreditScoringAPI`
-- Show: "✅ Published to <org-name>"
+### 2. Publish to org
+- Show: "🔗 Publishing to compute-demo-org..."
+- Silently run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring/api-spec.yaml --app credit-scoring-compute --connection-name compute-demo-org --client-name CreditScoringAPI`
+- Show: "✅ Published to compute-demo-org"
 - DO NOT show command or output
 
 ### 6. Final message
 ```
-**✨ Deployment complete! Your compute workload is live in <org-name>.**
+**✨ Deployment complete! Your compute workload is live in compute-demo-org.**
 ```
 - DO NOT show app URL
 
@@ -176,7 +150,7 @@ Please connect a Salesforce org first.
 ### Publish fails
 Show:
 ```
-❌ Publishing failed to <org-name>
+❌ Publishing failed to compute-demo-org
 Unable to publish compute extension. Connection may need to be refreshed.
 ```
 
@@ -197,11 +171,10 @@ Deploy anyway? This will deploy the last committed version.
 **Output:**
 ```
 Which org would you like to deploy to?
-  • prod-org
-  • agentforce-org
+  • compute-demo-org
 ```
 
-**User:** "prod-org"
+**User:** "compute-demo-org"
 
 **Output:**
 ```
@@ -211,14 +184,14 @@ Which org would you like to deploy to?
 🚀 Creating compute environment and deploying compute workload to Salesforce...
 ✅ Compute workload deployed successfully
 
-🔗 Publishing to prod-org...
-✅ Published to prod-org
+🔗 Publishing to compute-demo-org...
+✅ Published to compute-demo-org
 
-**✨ Deployment complete! Your compute workload is live in prod-org.**
+**✨ Deployment complete! Your compute workload is live in compute-demo-org.**
 ```
 
 ### Deployment with org specified
-**User:** "deploy app to prod-org"
+**User:** "deploy app to compute-demo-org"
 
 **Output:**
 ```
@@ -228,10 +201,10 @@ Which org would you like to deploy to?
 🚀 Creating compute environment and deploying compute workload to Salesforce...
 ✅ Compute workload deployed successfully
 
-🔗 Publishing to prod-org...
-✅ Published to prod-org
+🔗 Publishing to compute-demo-org...
+✅ Published to compute-demo-org
 
-**✨ Deployment complete! Your compute workload is live in prod-org.**
+**✨ Deployment complete! Your compute workload is live in compute-demo-org.**
 ```
 
 ### With uncommitted changes
@@ -240,11 +213,10 @@ Which org would you like to deploy to?
 **Output:**
 ```
 Which org would you like to deploy to?
-  • prod-org
-  • agentforce-org
+  • compute-demo-org
 ```
 
-**User:** "prod-org"
+**User:** "compute-demo-org"
 
 **Output:**
 ```
@@ -261,10 +233,10 @@ Deploy anyway? This will deploy the last committed version.
 🚀 Creating compute environment and deploying compute workload to Salesforce...
 ✅ Compute workload deployed successfully
 
-🔗 Publishing to prod-org...
-✅ Published to prod-org
+🔗 Publishing to compute-demo-org...
+✅ Published to compute-demo-org
 
-**✨ Deployment complete! Your compute workload is live in prod-org.**
+**✨ Deployment complete! Your compute workload is live in compute-demo-org.**
 ```
 
 ## Technical Details (for Claude, not shown to user)
@@ -272,10 +244,7 @@ Deploy anyway? This will deploy the last committed version.
 **IMPORTANT: These technical details contain "Heroku" references for implementation only. NEVER mention "Heroku" in any user-facing output.**
 
 ### Commands used internally:
-- Check status, silently run: `git status --porcelain`
-- Deploy, silently run: `git push heroku main`
-- List orgs, silently run: `heroku applink:connections --app credit-scoring-compute`
-- Publish, silently run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring --app credit-scoring-compute --connection-name <name> --client-name CreditScoringAPI`
+- Publish, silently run: `heroku salesforce:publish force-app/main/default/computeExtensions/CreditScoring --app credit-scoring-compute --connection-name compute-demo-org --client-name CreditScoringAPI`
 
 ### App details:
 - App name: credit-scoring-compute
