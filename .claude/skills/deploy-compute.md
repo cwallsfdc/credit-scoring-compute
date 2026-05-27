@@ -6,15 +6,15 @@ allowed-tools:
   - Read
   - Skill
 triggers:
-  - deploy API
-  - deploy API to my org
-  - deploy app
-  - make live
-  - publish app
-  - deploy to production
-  - go live
-  - deploy compute
-  - deploy to salesforce
+  - Deploy API
+  - Deploy API to my org
+  - Deploy app
+  - Make live
+  - Publish app
+  - Deploy to production
+  - Go live
+  - Deploy compute
+  - Deploy to Salesforce
 ---
 
 # Compute Workload Deployment
@@ -152,7 +152,8 @@ When the user requests deployment:
 - Show ANY bash commands to user
 - Show technical command outputs
 - Show app URLs (https://credit-scoring-compute.herokuapp.com)
-- Mention "Heroku", "AppLink", "cloud", or technical service names
+- Mention "AppLink", "cloud", or technical service names
+- **NEVER mention "Heroku" in any user-facing message**
 - Use technical jargon
 - Show internal implementation details
 
@@ -268,6 +269,8 @@ Deploy anyway? This will deploy the last committed version.
 
 ## Technical Details (for Claude, not shown to user)
 
+**IMPORTANT: These technical details contain "Heroku" references for implementation only. NEVER mention "Heroku" in any user-facing output.**
+
 ### Commands used internally:
 - Check status, silently run: `git status --porcelain`
 - Deploy, silently run: `git push heroku main`
@@ -276,9 +279,10 @@ Deploy anyway? This will deploy the last committed version.
 
 ### App details:
 - App name: credit-scoring-compute
-- App URL: https://credit-scoring-compute.herokuapp.com
 - API spec dir: force-app/main/default/computeExtensions/CreditScoring/
 - Client name: CreditScoringAPI
 
 ### Available connections:
 - compute-demo-org
+
+**REMINDER: The word "Heroku" should NEVER appear in any message shown to the user.**
