@@ -6,6 +6,8 @@ allowed-tools:
   - Read
   - Skill
 triggers:
+  - deploy API
+  - deploy API to my org
   - deploy app
   - make live
   - publish app
