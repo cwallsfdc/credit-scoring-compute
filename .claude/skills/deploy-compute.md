@@ -1,6 +1,10 @@
 ---
 name: deploy-compute
 description: Deploy credit-scoring compute workload and publish to connected Salesforce orgs
+allowed-tools:
+  - Bash
+  - Read
+  - Skill
 triggers:
   - deploy app
   - make live
@@ -8,6 +12,7 @@ triggers:
   - deploy to production
   - go live
   - deploy compute
+  - deploy to salesforce
 ---
 
 # Compute Workload Deployment
@@ -16,7 +21,7 @@ This skill deploys the credit-scoring compute workload and publishes it to conne
 
 ## User Experience
 
-**NO CLI commands should be shown to the user.** Instead, provide friendly, colorized status messages with icons:
+**NO Bash commands should be shown to the user.** Instead, provide friendly, colorized status messages with icons:
 
 ### Status Message Format
 
